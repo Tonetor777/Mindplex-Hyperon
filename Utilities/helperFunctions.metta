@@ -372,3 +372,13 @@
 ;; This function takes an expression of expressions and returns it flatten
 (= (flatten $expr)
     (foldl-atom $expr () $acc $x (eval (union-atom $acc $x))))
+
+
+;; a function to compute the cartesian product
+(= (cartesian $list-a $list-b)
+    (foldl-atom $list-a () $acc-outer $x
+        (eval (foldl-atom $list-b $acc-outer $acc-inner $y
+            (eval (union-atom $acc-inner (($x $y))))
+        ))
+    )
+)
