@@ -1,3 +1,5 @@
+!(bind! random-int (py-atom random.randrange))
+
 ;; Helper functions that are going to be useful for writing any metta code
 (= (!= $a $b) (not (== $a $b)))
 
@@ -39,6 +41,14 @@
         (return $res))))
          )
 
+;; Checks if first argument is non empty expression. If so gets tail and head from the first argument and returns forth argument using head and tail values. Returns fifth argument otherwise.
+(: if-decons-expr (-> Expression Variable Variable Atom Atom Atom))
+(= (if-decons-expr $atom $head $tail $then $else)
+  (function (eval (if-equal $atom ()
+    (return $else)
+    (chain (decons-atom $atom) $list
+      (unify $list ($head $tail) (return $then) (return $else)) )))))
+    
 ;; Function: wrapper
 ;; Description: This function applies a predicate to an atom and returns the atom if the predicate is true, otherwise returns an empty expression.
 ;; Parameters:
@@ -339,3 +349,26 @@
             (chain (eval (+ $min 1)) $nxt
             (chain (eval (range' $max $nxt $nacc)) $res $res))))) $final 
                 (return $final)))))
+
+; A function which return true if the second atom of the first experation is greater than the second's
+(: bySecondAtom (-> ($a Number) ($b Number) Bool))
+(= (bySecondAtom $x $y) 
+    (function
+    (chain (eval (index-atom $x 1)) $xSecond
+    (chain (eval (index-atom $y 1)) $ySecond
+    (chain (eval (> $xSecond $ySecond)) $bool
+    (return $bool))))
+    ))
+
+;; A function to randomly pick an atom from a given expression
+(: randomAtom (-> Expression Atom)) 
+(= (randomAtom $expr)
+    (function 
+        (chain (eval (size-atom $expr)) $size
+        (chain (eval (random-int 0 $size)) $randIdx
+        (chain (eval (index-atom $expr $randIdx)) $rand
+        (return ($rand $randIdx)))))))
+
+;; This function takes an expression of expressions and returns it flatten
+(= (flatten $expr)
+    (foldl-atom $expr () $acc $x (eval (union-atom $acc $x))))
