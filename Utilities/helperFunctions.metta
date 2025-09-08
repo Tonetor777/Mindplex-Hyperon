@@ -8,22 +8,25 @@
 ;; (= (>= $a $b) (or (== $a $b) (> $a $b)))
 
 ;Function to cocatinate two tuples (A B) (C D) ==> (A B C D)
-;; (: concatTuple (-> Expression Expression Expression))
+(: concatTuple (-> Expression Expression Expression))
 (= (concatTuple $x $y) (union-atom $x $y)) 
 
 ; a function which checks if an element is a member of a tuple.
+(: isMember (-> Atom Expression Bool))
 (= (isMember $x $list)
     (not (== (intersection-atom ($x) $list) ()))
 )
 
 ;; A function to replace a specific atom
 ;;    with a new one from a list of atoms.
+(: findAndReplace (-> Atom Atom Expression Expression))
 (= (findAndReplace $old $new $list) 
       (map-atom $list $x (eval (if-equal $x $old $new $x)))
 )
 
 ;; A function that behaves like a do while loop.
 ;; It executes the functions in the given list and returns the last result.
+; (: until -> (-> $a Bool) (-> $a $a) $a $a)
 (= (until $predicate $function $x) 
 (function
     (chain (eval ($predicate $x)) $b 
@@ -34,6 +37,7 @@
 
 
 ;; Fold a tuple from right to left
+(: foldr (-> Atom Atom Expression Atom))
 (= (foldr $f $i $xs) ;; TODO: I think the minimal metta works with tail recursion only. I couldn't find a work around to make the foldr a tail recursion. So I used this.
     (function 
         (chain (eval (reverse $xs)) $rev
@@ -56,6 +60,7 @@
 ;;   - $x: The atom to which the predicate is applied.
 ;; Returns:
 ;;   - Expression: Returns the atom if the predicate evaluates to true, otherwise returns an empty expression.
+(: wrapper (-> (-> $a Bool) $a Atom))
 (= (wrapper $predicate $x) 
     (function 
         (chain (eval ($predicate $x)) $bool
@@ -89,6 +94,7 @@
                 (return $res))))
 
 ;; A function to remove all elements found in $common from a $tuple
+(: (-> Expression Expression Expression))
 (= (removeElement $common $tuple)
    (subtraction-atom $tuple $common))
 
@@ -99,13 +105,16 @@
 (: any (-> Atom Bool))
 (= (any $bools) (isMember True $bools))
 
+(: sum (-> Expression Expression))
 (= (sum $list) (foldl-atom $list 0 $x $acc (+ $x $acc)))
 
 ;; Function to count atom occrence in a list of atoms.
+(: count (-> Atom Expression Expression))
 (= (count $atom $list)
    (foldl-atom $list 0 $acc $x (eval (if-equal $atom $x (+ $acc 1) $acc))))
 
 ;; A function to check if a given atom is symbol.
+(: isSymbol (-> Atom Bool))
 (= (isSymbol $expr) 
     (function
         (chain (eval (get-metatype $expr)) $type
@@ -150,6 +159,7 @@
         (return $r))))
 
 ;; A function which check if a given number is postive
+(: isPositive (-> Number Bool))
 (= (isPositive $x)                                                 
     (function                                                      
         (chain (eval (> $x 0)) $res                                
@@ -220,6 +230,7 @@
                 (return $f))))
 
 ;; Finds length of a tuple
+(: len (-> Expression Number))
 (= (len $expr)
     (foldl-atom $expr 0 $acc $x (eval (+ $acc 1))))
 
@@ -243,6 +254,7 @@
    (collapse (let $content (get-atoms $space) (remove-atom $space $content))))
 
 ;; function to partially sort the smallest $n Atoms from an expression
+(: selectionSort (-> Expression Number Expression))
 (= (selectionSort $list $n) 
     (function
     (chain (eval (selectionSort $list $n < ())) $r
@@ -304,6 +316,7 @@
 
 ;; A function to remove the frist n elements of a tuple 
 ;;   and returns the rest.
+(: drop (-> Number Expression Expression))
 (= (drop $n $a)
     (function 
     (chain (eval (if-decons-expr $a $h $t 
@@ -370,15 +383,43 @@
         (return ($rand $randIdx)))))))
 
 ;; This function takes an expression of expressions and returns it flatten
+(: flatten (-> Expression Expression))
 (= (flatten $expr)
     (foldl-atom $expr () $acc $x (eval (union-atom $acc $x))))
 
 
 ;; a function to compute the cartesian product
+(: cartesian (-> Expression Expression Expression))
 (= (cartesian $list-a $list-b)
     (foldl-atom $list-a () $acc-outer $x
         (eval (foldl-atom $list-b $acc-outer $acc-inner $y
             (eval (union-atom $acc-inner (($x $y))))
         ))
     )
+)
+;; cartesian product for non empty three tuples
+(: cartesian3 (-> Expression Expression Expression Expression))
+(= (cartesian3 $list-a $list-b $list-c)
+    (foldl-atom $list-a () $acc-a $x
+        (foldl-atom $list-b $acc-a $acc-b $y
+            (foldl-atom $list-c $acc-b $acc-c $z
+                (eval (union-atom $acc-c (($x $y $z))))
+            )
+        )
+    )
+)
+
+(= (cartesianAppend $combinations $new-list)
+    (foldl-atom $combinations () $acc-outer $combo
+        (foldl-atom $new-list $acc-outer $acc-inner $new-element
+            (eval (union-atom $acc-inner ((appendAtom $combo $new-element))))
+        )
+    )
+)
+
+;; Computes cartesian for any number of tuples greater than or equal to two. 
+;; Input - List of tuples more than or equal to 2
+(: multiCartesian Expression Expression)
+(= (multiCartesian $list-of-tuples)
+   (foldl-atom $list-of-tuples (()) $acc $x (cartesianAppend $acc $x))
 )
