@@ -218,12 +218,6 @@
 !(assertEqual (cartesian (1 2) (3 4)) ((1 3) (1 4) (2 3) (2 4)))
 !(assertEqual (cartesian (x y) (1 2 3)) ((x 1) (x 2) (x 3) (y 1) (y 2) (y 3)))
 
-;; Test cases for cartesian3
-!(assertEqual (cartesian3 (1 2) (a b) (x z)) ((1 a x) (1 a z) (1 b x) (1 b z)(2 a x) (2 a z) (2 b x) (2 b z)))
-!(assertEqual (cartesian3 (A) (1 2 3) (x y)) ((A 1 x) (A 1 y) (A 2 x) (A 2 y) (A 3 x) (A 3 y)))
-!(assertEqual (cartesian3 (1 2) () (a b))())
-!(assertEqual (cartesian3 (First) (Second) (Third)) ((First Second Third)))
-
 ;; Test cases for multiCartesian
 !(assertEqual (multiCartesian ((1 2) (a b) (x z))) ((1 a x) (1 a z) (1 b x) (1 b z) (2 a x) (2 a z) (2 b x) (2 b z)))
 !(assertEqual (multiCartesian ((x) (1 2 3) (a b))) ((x 1 a) (x 1 b) (x 2 a) (x 2 b) (x 3 a) (x 3 b)))

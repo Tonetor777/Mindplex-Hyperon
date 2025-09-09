@@ -94,7 +94,7 @@
                 (return $res))))
 
 ;; A function to remove all elements found in $common from a $tuple
-(: (-> Expression Expression Expression))
+(: removeElement (-> Expression Expression Expression))
 (= (removeElement $common $tuple)
    (subtraction-atom $tuple $common))
 
@@ -105,11 +105,11 @@
 (: any (-> Atom Bool))
 (= (any $bools) (isMember True $bools))
 
-(: sum (-> Expression Expression))
+(: sum (-> Expression Number))
 (= (sum $list) (foldl-atom $list 0 $x $acc (+ $x $acc)))
 
 ;; Function to count atom occrence in a list of atoms.
-(: count (-> Atom Expression Expression))
+(: count (-> Atom Expression Number))
 (= (count $atom $list)
    (foldl-atom $list 0 $acc $x (eval (if-equal $atom $x (+ $acc 1) $acc))))
 
@@ -395,17 +395,6 @@
         (eval (foldl-atom $list-b $acc-outer $acc-inner $y
             (eval (union-atom $acc-inner (($x $y))))
         ))
-    )
-)
-;; cartesian product for non empty three tuples
-(: cartesian3 (-> Expression Expression Expression Expression))
-(= (cartesian3 $list-a $list-b $list-c)
-    (foldl-atom $list-a () $acc-a $x
-        (foldl-atom $list-b $acc-a $acc-b $y
-            (foldl-atom $list-c $acc-b $acc-c $z
-                (eval (union-atom $acc-c (($x $y $z))))
-            )
-        )
     )
 )
 
